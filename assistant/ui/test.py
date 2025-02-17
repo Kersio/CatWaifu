@@ -5,7 +5,7 @@ device = torch.device('cpu')  # Или 'cuda' для GPU
 model, _ = silero_tts(language='ru', speaker='v3_1_ru')
 
 # Генерация речи
-audio = model.apply_tts(text="чувачок", speaker='baya', sample_rate=48000)
+audio = model.apply_tts(text="илья кокарда", speaker='baya', sample_rate=48000)
 
 # Сохранение аудио в файл
 import soundfile as sf

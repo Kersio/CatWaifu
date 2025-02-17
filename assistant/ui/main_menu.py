@@ -1,5 +1,59 @@
-from PIL import Image
 from PyQt5 import QtWidgets, QtGui, QtCore
+from PIL import Image
+from config import CURRENT_AVATAR
+from assistant.ui.strings import UI_STRINGS
+
+MAIN_MENU_STRINGS = UI_STRINGS['main_menu']
+
+class CustomButton(QtWidgets.QWidget):
+    def __init__(self, icon_path, text, parent=None):
+        super().__init__(parent)
+        self.setFixedHeight(40)  # Фиксированная высота кнопки
+
+        # Создаем контейнер для кнопки
+        self.container = QtWidgets.QWidget(self)
+        self.container.setStyleSheet("""
+            background-color: #FFB6C1;  /* Пастельный розовый */
+            border-radius: 20px;        /* Больше скругление */
+        """)
+        self.container.setFixedSize(200, 40)  # Размер кнопки
+
+        # Создаем белый круг
+        self.circle = QtWidgets.QLabel(self.container)
+        self.circle.setFixedSize(30, 30)  # Размер круга
+        self.circle.setStyleSheet("""
+            background-color: white;
+            border-radius: 15px;         /* Круг */
+            border: 2px solid #FF69B4;   /* Розовая граница */
+        """)
+        self.circle.move(5, 5)  # Размещаем круг в левой части контейнера
+
+        # Устанавливаем иконку в круг
+        self.icon = QtGui.QPixmap(icon_path).scaled(24, 24, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+        self.circle.setPixmap(self.icon)
+        self.circle.setAlignment(QtCore.Qt.AlignCenter)
+
+        # Создаем текстовую часть
+        self.label = QtWidgets.QLabel(text, self.container)
+        self.label.setStyleSheet("""
+            color: white;              /* Белый текст */
+            font-size: 14px;           /* Размер шрифта */
+            padding-left: 10px;        /* Отступ слева */
+        """)
+        self.label.move(45, 0)  # Размещаем текст справа от круга
+        self.label.setFixedSize(150, 40)  # Размер текстовой части
+        self.label.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
+
+        # Размещаем контейнер в QHBoxLayout
+        layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(self.container)
+        layout.setContentsMargins(0, 0, 0, 0)  # Убираем отступы
+        self.setLayout(layout)
+
+    def mousePressEvent(self, event):
+        """Обработка нажатия на кнопку"""
+        if event.button() == QtCore.Qt.LeftButton:
+            print(f"Clicked: {self.label.text()}")
 
 
 class ButtonsWindow(QtWidgets.QWidget):
@@ -13,18 +67,18 @@ class ButtonsWindow(QtWidgets.QWidget):
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
         # Создание кнопок
-        self.button1 = QtWidgets.QPushButton("Кнопка 1", self)
-        self.button2 = QtWidgets.QPushButton("Кнопка 2", self)
-        self.button3 = QtWidgets.QPushButton("Кнопка 3", self)
-        self.button4 = QtWidgets.QPushButton("Кнопка 4", self)
+        buttons_strings = MAIN_MENU_STRINGS['buttons']
+        self.button1 = CustomButton("icons/settings.png", buttons_strings['settings'], self)
+        self.button2 = CustomButton("icons/exit.png", buttons_strings['exit'], self)
+        self.button3 = CustomButton("icons/chat.png", buttons_strings["chat"], self)
 
         # Размещение кнопок в QVBoxLayout
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.button1)
         layout.addWidget(self.button2)
         layout.addWidget(self.button3)
-        layout.addWidget(self.button4)
-        layout.setContentsMargins(0, 0, 0, 0)  # Убираем отступы
+        layout.setContentsMargins(10, 10, 10, 10)  # Добавляем небольшие отступы
+        layout.setSpacing(10)  # Расстояние между кнопками
         self.setLayout(layout)
 
         # Скрываем окно по умолчанию
@@ -44,10 +98,11 @@ class MainWindow(QtWidgets.QMainWindow):
             QtCore.Qt.Tool
         )
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-
         self.setWindowTitle("CatWaifu")
-        input_image_path = "C:\\Users\\admin\\Desktop\\Papka\\FourSemester\\PPO\\CatWaifu\\assistant\\ui\\avatar1.png"
-        resized_pixmap = self.resize_image_with_pillow(input_image_path, (392, 416))
+
+        # Загрузка аватара
+        avatar_path = CURRENT_AVATAR
+        resized_pixmap = self.resize_image_with_pillow(avatar_path, (392, 416))
 
         # Создание QLabel для изображения
         self.avatar_label = QtWidgets.QLabel(self)
@@ -75,17 +130,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setGeometry(1620, 635, 392, 416)
 
     def on_avatar_click(self, event):
-
         if event.button() == QtCore.Qt.RightButton:
             if self.buttons_window.isVisible():
                 self.buttons_window.hide()
             elif not self.dragging:
                 self.show_buttons_window()
-
         elif event.button() == QtCore.Qt.LeftButton:
             self.dragging = True
             self.offset = event.globalPos() - self.pos()
-
             # Скрываем кнопки при начале перемещения
             if self.buttons_window.isVisible():
                 self.buttons_window.hide()
@@ -94,10 +146,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.dragging and self.offset:
             new_pos = event.globalPos() - self.offset
             self.move(new_pos)
-
             # Проверяем положение аватара на экране и отражаем его при необходимости
             self.update_avatar_reflection()
-
             # Обновляем позицию кнопок, если они видимы
             if self.buttons_window.isVisible():
                 self.update_buttons_position()
@@ -116,7 +166,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Уменьшаем отступ до 5 пикселей
         offset = 5
-
         if is_left_half:
             # Если аватар в левой части экрана, показываем кнопки справа
             x = avatar_rect.right() + offset
