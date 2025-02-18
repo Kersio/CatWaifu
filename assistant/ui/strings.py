@@ -7,23 +7,5 @@ UI_STRINGS = {
             "exit": "Выход"
         },
         "description": "Welcome to the application!"
-    },
-    "settings": {
-        "title": "Settings",
-        "buttons": {
-            "language": "Change Language",
-            "theme": "Change Theme",
-            "back": "Back"
-        },
-        "description": "Adjust your preferences here."
-    },
-    "profile": {
-        "title": "Profile",
-        "buttons": {
-            "edit": "Edit Profile",
-            "logout": "Logout",
-            "back": "Back"
-        },
-        "description": "View and manage your profile information."
     }
 }

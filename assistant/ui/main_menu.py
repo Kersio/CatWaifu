@@ -1,48 +1,59 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+import sys
+
+from PySide6 import QtWidgets, QtGui, QtCore
 from PIL import Image
-from config import CURRENT_AVATAR
+from config import ICON_CHAT, ICON_SETTINGS, ICON_EXIT, CURRENT_AVATAR
 from assistant.ui.strings import UI_STRINGS
 
 MAIN_MENU_STRINGS = UI_STRINGS['main_menu']
 
+
 class CustomButton(QtWidgets.QWidget):
+
+    clicked = QtCore.Signal()  # Создаем сигнал clicked
+
     def __init__(self, icon_path, text, parent=None):
         super().__init__(parent)
-        self.setFixedHeight(40)  # Фиксированная высота кнопки
+
+        self.setFixedHeight(50)  # Высота кнопки
 
         # Создаем контейнер для кнопки
         self.container = QtWidgets.QWidget(self)
         self.container.setStyleSheet("""
             background-color: #FFB6C1;  /* Пастельный розовый */
-            border-radius: 20px;        /* Больше скругление */
+            border-radius: 25px;        /* Скругление */
         """)
-        self.container.setFixedSize(200, 40)  # Размер кнопки
+        self.container.setFixedSize(200, 50)  # Размер кнопки
 
         # Создаем белый круг
         self.circle = QtWidgets.QLabel(self.container)
-        self.circle.setFixedSize(30, 30)  # Размер круга
+        self.circle.setFixedSize(35, 35)  # Размер круга
         self.circle.setStyleSheet("""
             background-color: white;
-            border-radius: 15px;         /* Круг */
+            border-radius: 17px;         /* Круг */
             border: 2px solid #FF69B4;   /* Розовая граница */
         """)
-        self.circle.move(5, 5)  # Размещаем круг в левой части контейнера
+        self.circle.move(8, 8)  # Размещаем круг в левой части контейнера
 
         # Устанавливаем иконку в круг
-        self.icon = QtGui.QPixmap(icon_path).scaled(24, 24, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+        self.icon = QtGui.QPixmap(icon_path).scaled(
+            31, 31,  # Размер иконки
+            QtCore.Qt.AspectRatioMode.KeepAspectRatio,
+            QtCore.Qt.TransformationMode.SmoothTransformation
+        )
         self.circle.setPixmap(self.icon)
-        self.circle.setAlignment(QtCore.Qt.AlignCenter)
+        self.circle.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)  # Точный центр иконки
 
         # Создаем текстовую часть
         self.label = QtWidgets.QLabel(text, self.container)
         self.label.setStyleSheet("""
             color: white;              /* Белый текст */
-            font-size: 14px;           /* Размер шрифта */
-            padding-left: 10px;        /* Отступ слева */
+            padding-left: 8px;         /* Отступ слева */
         """)
-        self.label.move(45, 0)  # Размещаем текст справа от круга
-        self.label.setFixedSize(150, 40)  # Размер текстовой части
-        self.label.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignLeft)
+        self.label.setFont(QtGui.QFont("Comic Sans MS", 14))  # Размер шрифта
+        self.label.move(50, 0)  # Размещаем текст справа от круга
+        self.label.setFixedSize(140, 50)  # Размер текстовой части
+        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignLeft)
 
         # Размещаем контейнер в QHBoxLayout
         layout = QtWidgets.QHBoxLayout()
@@ -50,39 +61,74 @@ class CustomButton(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)  # Убираем отступы
         self.setLayout(layout)
 
-    def mousePressEvent(self, event):
-        """Обработка нажатия на кнопку"""
-        if event.button() == QtCore.Qt.LeftButton:
-            print(f"Clicked: {self.label.text()}")
+        # Добавляем флаг для отслеживания состояния наведения
+        self.is_hovered = False
+
+    def enterEvent(self, event):
+        """Обработка входа курсора на кнопку"""
+        self.is_hovered = True
+        self.container.setStyleSheet("""
+            background-color: #FF69B4;  /* Более насыщенный розовый */
+            border-radius: 25px;
+        """)
+        self.circle.setStyleSheet("""
+            background-color: #F0F0F0;  /* Сlightly darker background for the circle */
+            border-radius: 17px;
+            border: 2px solid #E91E63;  /* Darker border color */
+        """)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        """Обработка выхода курсора с кнопки"""
+        self.is_hovered = False
+        self.container.setStyleSheet("""
+            background-color: #FFB6C1;  /* Пастельный розовый */
+            border-radius: 25px;
+        """)
+        self.circle.setStyleSheet("""
+            background-color: white;
+            border-radius: 17px;
+            border: 2px solid #FF69B4;  /* Original border color */
+        """)
+        super().leaveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        """Обработка события отпускания кнопки мыши"""
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            self.clicked.emit()  # Отправляем сигнал при клике
+        super().mouseReleaseEvent(event)
 
 
 class ButtonsWindow(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowFlags(
-            QtCore.Qt.FramelessWindowHint |
-            QtCore.Qt.WindowStaysOnTopHint |
-            QtCore.Qt.Tool
+            QtCore.Qt.WindowType.FramelessWindowHint |
+            QtCore.Qt.WindowType.WindowStaysOnTopHint |
+            QtCore.Qt.WindowType.Tool
         )
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
         # Создание кнопок
         buttons_strings = MAIN_MENU_STRINGS['buttons']
-        self.button1 = CustomButton("icons/settings.png", buttons_strings['settings'], self)
-        self.button2 = CustomButton("icons/exit.png", buttons_strings['exit'], self)
-        self.button3 = CustomButton("icons/chat.png", buttons_strings["chat"], self)
+        self.chat_button = CustomButton(ICON_CHAT, buttons_strings["chat"], self)
+        self.settings_button = CustomButton(ICON_SETTINGS, buttons_strings['settings'], self)
+        self.exit_button = CustomButton(ICON_EXIT, buttons_strings['exit'], self)
+
+        self.exit_button.clicked.connect(self.exit_event)
 
         # Размещение кнопок в QVBoxLayout
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.button1)
-        layout.addWidget(self.button2)
-        layout.addWidget(self.button3)
+        layout.addWidget(self.chat_button)
+        layout.addWidget(self.settings_button)
+        layout.addWidget(self.exit_button)
         layout.setContentsMargins(10, 10, 10, 10)  # Добавляем небольшие отступы
         layout.setSpacing(10)  # Расстояние между кнопками
         self.setLayout(layout)
-
         # Скрываем окно по умолчанию
         self.hide()
+
+    def exit_event(self):
+        sys.exit()
 
     def set_position(self, x, y):
         """Устанавливает позицию окна"""
@@ -93,49 +139,42 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowFlags(
-            QtCore.Qt.FramelessWindowHint |
-            QtCore.Qt.WindowStaysOnTopHint |
-            QtCore.Qt.Tool
+            QtCore.Qt.WindowType.FramelessWindowHint |
+            QtCore.Qt.WindowType.WindowStaysOnTopHint |
+            QtCore.Qt.WindowType.Tool
         )
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setWindowTitle("CatWaifu")
-
         # Загрузка аватара
         avatar_path = CURRENT_AVATAR
         resized_pixmap = self.resize_image_with_pillow(avatar_path, (392, 416))
-
         # Создание QLabel для изображения
         self.avatar_label = QtWidgets.QLabel(self)
         self.avatar_label.setPixmap(resized_pixmap)
-        self.avatar_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.avatar_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.avatar_label.mousePressEvent = self.on_avatar_click
         self.avatar_label.mouseMoveEvent = self.on_avatar_move
         self.avatar_label.mouseReleaseEvent = self.on_avatar_release
-
         # Устанавливаем фиксированный размер QLabel
         self.avatar_label.setFixedSize(resized_pixmap.size())
-
         # Создаем окно с кнопками
         self.buttons_window = ButtonsWindow(self)
-
         # Атрибуты для перемещения окна
         self.dragging = False
         self.offset = None
         self.is_reflected = False  # Флаг для отражения аватара
-
         # Сохраняем оригинальное изображение
         self.original_pixmap = resized_pixmap
-
         # Устанавливаем размеры и позицию окна
         self.setGeometry(1620, 635, 392, 416)
 
     def on_avatar_click(self, event):
-        if event.button() == QtCore.Qt.RightButton:
+        if event.button() == QtCore.Qt.MouseButton.RightButton:
             if self.buttons_window.isVisible():
                 self.buttons_window.hide()
             elif not self.dragging:
                 self.show_buttons_window()
-        elif event.button() == QtCore.Qt.LeftButton:
+        elif event.button() == QtCore.Qt.MouseButton.LeftButton:
             self.dragging = True
             self.offset = event.globalPos() - self.pos()
             # Скрываем кнопки при начале перемещения
@@ -153,34 +192,26 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.update_buttons_position()
 
     def on_avatar_release(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
             self.dragging = False
             self.offset = None
 
     def show_buttons_window(self):
         avatar_rect = self.avatar_label.geometry()
+        global_avatar_pos = self.mapToGlobal(avatar_rect.topLeft())  # Глобальные координаты аватара
         screen_geometry = QtWidgets.QApplication.primaryScreen().availableGeometry()
-
-        # Определяем, находится ли аватар в левой или правой части экрана
-        is_left_half = (self.x() + avatar_rect.center().x()) < (screen_geometry.width() / 2)
-
-        # Уменьшаем отступ до 5 пикселей
-        offset = 5
+        is_left_half = (global_avatar_pos.x() + avatar_rect.width() // 2) < (screen_geometry.width() // 2)
+        offset = 5  # Отступ от аватара
         if is_left_half:
-            # Если аватар в левой части экрана, показываем кнопки справа
-            x = avatar_rect.right() + offset
+            x = global_avatar_pos.x() + avatar_rect.width() + offset
         else:
-            # Если аватар в правой части экрана, показываем кнопки слева
-            x = avatar_rect.left() - self.buttons_window.width() - offset
-
-        # Вычисляем вертикальную позицию для центрирования кнопок
-        y = avatar_rect.top() + (avatar_rect.height() - self.buttons_window.height()) // 2
-
-        # Устанавливаем позицию окна с кнопками
-        self.buttons_window.set_position(self.x() + x, self.y() + y)
+            x = global_avatar_pos.x() - self.buttons_window.width() - offset
+        y = global_avatar_pos.y() + (avatar_rect.height() - self.buttons_window.height()) // 2
+        self.buttons_window.set_position(x, y)
         self.buttons_window.show()
 
     def update_buttons_position(self):
+        """Обновляет позицию кнопок, если они видимы"""
         if self.buttons_window.isVisible():
             self.show_buttons_window()
 
@@ -188,15 +219,10 @@ class MainWindow(QtWidgets.QMainWindow):
         """Отражает аватара горизонтально в зависимости от его положения на экране"""
         avatar_rect = self.avatar_label.geometry()
         screen_geometry = QtWidgets.QApplication.primaryScreen().availableGeometry()
-
-        # Определяем, находится ли аватар в левой или правой части экрана
         is_left_half = (self.x() + avatar_rect.center().x()) < (screen_geometry.width() / 2)
-
-        # Если аватар в левой части экрана и не отражен — отражаем его
         if is_left_half and not self.is_reflected:
             self.avatar_label.setPixmap(self.original_pixmap.transformed(QtGui.QTransform().scale(-1, 1)))
             self.is_reflected = True
-        # Если аватар в правой части экрана и отражен — возвращаем его в исходное состояние
         elif not is_left_half and self.is_reflected:
             self.avatar_label.setPixmap(self.original_pixmap)
             self.is_reflected = False
@@ -209,6 +235,6 @@ class MainWindow(QtWidgets.QMainWindow):
             resized_image.width,
             resized_image.height,
             resized_image.width * 4,
-            QtGui.QImage.Format_RGBA8888
+            QtGui.QImage.Format.Format_RGBA8888
         )
         return QtGui.QPixmap.fromImage(qimage)
