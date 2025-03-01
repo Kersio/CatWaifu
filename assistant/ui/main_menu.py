@@ -50,7 +50,7 @@ class CustomButton(QtWidgets.QWidget):
             color: white;              /* Белый текст */
             padding-left: 8px;         /* Отступ слева */
         """)
-        self.label.setFont(QtGui.QFont("Comic Sans MS", 14))  # Размер шрифта
+        self.label.setFont(QtGui.QFont("Comic Sans MS", 14))
         self.label.move(50, 0)  # Размещаем текст справа от круга
         self.label.setFixedSize(140, 50)  # Размер текстовой части
         self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignLeft)
@@ -76,6 +76,7 @@ class CustomButton(QtWidgets.QWidget):
             border-radius: 17px;
             border: 2px solid #E91E63;  /* Darker border color */
         """)
+        self.label.setFont(QtGui.QFont("Comic Sans MS", 16, QtGui.QFont.Weight.Bold))
         super().enterEvent(event)
 
     def leaveEvent(self, event):
@@ -90,6 +91,7 @@ class CustomButton(QtWidgets.QWidget):
             border-radius: 17px;
             border: 2px solid #FF69B4;  /* Original border color */
         """)
+        self.label.setFont(QtGui.QFont("Comic Sans MS", 14))  # Размер шрифта
         super().leaveEvent(event)
 
     def mouseReleaseEvent(self, event):
@@ -197,16 +199,17 @@ class MainWindow(QtWidgets.QMainWindow):
             self.offset = None
 
     def show_buttons_window(self):
-        avatar_rect = self.avatar_label.geometry()
+        avatar_rect = self.avatar_label.frameGeometry()
         global_avatar_pos = self.mapToGlobal(avatar_rect.topLeft())  # Глобальные координаты аватара
+
         screen_geometry = QtWidgets.QApplication.primaryScreen().availableGeometry()
         is_left_half = (global_avatar_pos.x() + avatar_rect.width() // 2) < (screen_geometry.width() // 2)
-        offset = 5  # Отступ от аватара
+        offset = 80
         if is_left_half:
-            x = global_avatar_pos.x() + avatar_rect.width() + offset
+            x = global_avatar_pos.x() + avatar_rect.width() - offset
         else:
-            x = global_avatar_pos.x() - self.buttons_window.width() - offset
-        y = global_avatar_pos.y() + (avatar_rect.height() - self.buttons_window.height()) // 2
+            x = global_avatar_pos.x() - self.buttons_window.sizeHint().width() + offset
+        y = global_avatar_pos.y() + (avatar_rect.height() - self.buttons_window.sizeHint().height()) // 2
         self.buttons_window.set_position(x, y)
         self.buttons_window.show()
 
@@ -216,7 +219,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.show_buttons_window()
 
     def update_avatar_reflection(self):
-        """Отражает аватара горизонтально в зависимости от его положения на экране"""
+        """Отражает аватар горизонтально в зависимости от его положения на экране"""
         avatar_rect = self.avatar_label.geometry()
         screen_geometry = QtWidgets.QApplication.primaryScreen().availableGeometry()
         is_left_half = (self.x() + avatar_rect.center().x()) < (screen_geometry.width() / 2)
@@ -227,9 +230,27 @@ class MainWindow(QtWidgets.QMainWindow):
             self.avatar_label.setPixmap(self.original_pixmap)
             self.is_reflected = False
 
-    def resize_image_with_pillow(self, image_path, size):
+    def resize_image_with_pillow(self, image_path, max_size):
+        # Открываем изображение и получаем его текущие размеры
         image = Image.open(image_path).convert("RGBA")
-        resized_image = image.resize(size, Image.Resampling.LANCZOS)
+        original_width, original_height = image.size
+
+        # Вычисляем коэффициенты масштабирования
+        max_width, max_height = max_size
+        width_ratio = max_width / original_width
+        height_ratio = max_height / original_height
+
+        # Берём минимальный из двух коэффициентов для сохранения пропорций
+        scale_ratio = min(width_ratio, height_ratio)
+
+        # Вычисляем новые размеры
+        new_width = int(original_width * scale_ratio)
+        new_height = int(original_height * scale_ratio)
+
+        # Масштабируем изображение с сохранением пропорций
+        resized_image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+        # Конвертируем в QImage и затем в QPixmap
         qimage = QtGui.QImage(
             resized_image.tobytes(),
             resized_image.width,

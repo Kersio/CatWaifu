@@ -16,3 +16,10 @@ ICON_SETTINGS = os.path.join(ICONS_PATH, 'settings.png')
 ICON_EXIT = os.path.join(ICONS_PATH, 'exit.png')
 
 ICON_CANCEL = os.path.join(ICONS_PATH, 'cancel.png')
+
+# Параметры для TTS модели
+LANGUAGE_TTS = 'ru'
+SPEAKER_MODEL = 'v3_1_ru'
+SPEAKER_VOICE = 'baya'
+SAMPLE_RATE_TTS = 48000
+
