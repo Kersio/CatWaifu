@@ -1,11 +1,10 @@
 UI_STRINGS = {
-    "main_menu": {
-        "title": "Main Menu",
+    "avatar_menu": {
+        "title": "Avatar Menu",
         "buttons": {
             "chat": "Диалог",
             "settings": "Настройки",
             "exit": "Выход"
-        },
-        "description": "Welcome to the application!"
+        }
     }
 }

@@ -1,9 +1,9 @@
-from silero import silero_tts
+from silero import silero_tts   
 import torch
 
 from config import LANGUAGE_TTS, SPEAKER_VOICE, SPEAKER_MODEL, SAMPLE_RATE_TTS
 
-DEVICE = torch.device('cpu' if torch.cpu.is_available() else 'cuda')
+DEVICE = torch.device('cuda' if torch.cpu.is_available() else 'cpu')
 
 
 class TextToSpeechModel:

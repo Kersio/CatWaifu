@@ -15,11 +15,14 @@ ICON_CHAT = os.path.join(ICONS_PATH, 'chat.png')
 ICON_SETTINGS = os.path.join(ICONS_PATH, 'settings.png')
 ICON_EXIT = os.path.join(ICONS_PATH, 'exit.png')
 
+# Путь к изображению кнопки отмены
 ICON_CANCEL = os.path.join(ICONS_PATH, 'cancel.png')
+
+# Путь к изображению для иконки трея
+ICON_TRAY = os.path.join(ICONS_PATH, 'cat.png')
 
 # Параметры для TTS модели
 LANGUAGE_TTS = 'ru'
 SPEAKER_MODEL = 'v3_1_ru'
 SPEAKER_VOICE = 'baya'
 SAMPLE_RATE_TTS = 48000
-
