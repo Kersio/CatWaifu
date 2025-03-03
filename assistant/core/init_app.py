@@ -3,8 +3,7 @@ import sys
 from PySide6 import QtWidgets, QtGui, QtCore
 from assistant.ui.avatar_window import AvatarWindow
 from assistant.ui.system_tray import TrayIcon
-from assistant.models.tts_model import TextToSpeechModel
-
+from assistant.core.services.audio_service import AudioService
 
 def init_application():
     app = QtWidgets.QApplication([])
@@ -24,8 +23,11 @@ def init_application():
     tray_icon = TrayIcon(icon, avatar_window)
     tray_icon.show()
 
-    return app, avatar_window, tray_icon
+    audio_service = AudioService()
+
+    return app, audio_service
 
 
 def run_application(app):
     sys.exit(app.exec())
+
