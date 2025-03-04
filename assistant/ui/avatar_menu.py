@@ -38,7 +38,7 @@ class AvatarMenu(QtWidgets.QWidget):
 
     @staticmethod
     def exit_event():
-        sys.exit()
+        QtWidgets.QApplication.quit()
 
     def set_position(self, x, y):
         """Устанавливает позицию окна"""

@@ -33,14 +33,6 @@ class TrayIcon(QtWidgets.QSystemTrayIcon):
         # Установка контекстного меню
         self.setContextMenu(self.menu)
 
-        # Обработка событий активации трей-иконки
-        self.activated.connect(self.on_tray_icon_activated)
-
-    def on_tray_icon_activated(self, reason):
-        """Обработка событий активации трей-иконки"""
-        if reason == QtWidgets.QSystemTrayIcon.ActivationReason.Trigger:
-            print("Трей-иконка была нажата")
-
     def exit_application(self):
         """Выход из приложения"""
         QtWidgets.QApplication.quit()

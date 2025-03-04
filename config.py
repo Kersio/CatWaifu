@@ -11,7 +11,7 @@ CURRENT_AVATAR = os.path.join(AVATARS_PATH, 'avatar1.png')
 AVATAR_THINKING = os.path.join(AVATARS_PATH, 'think.png')
 
 # Путь к изображениям кнопок, появляющихся при нажатии на аватар
-ICON_CHAT = os.path.join(ICONS_PATH, 'chat.png')
+ICON_CHAT = os.path.join(ICONS_PATH, 'chat2.png')
 ICON_SETTINGS = os.path.join(ICONS_PATH, 'settings.png')
 ICON_EXIT = os.path.join(ICONS_PATH, 'exit.png')
 
@@ -27,5 +27,12 @@ SPEAKER_MODEL = 'v3_1_ru'
 SPEAKER_VOICE = 'baya'
 SAMPLE_RATE_TTS = 48000
 
+# Знаки препинания для текста
+PUNCTUATION_MARKS = ['.', ',', '?', '!']
+FLAG_PUNCTUATION = True
+
+# Текст приветствия при включении приложения
+GREETING_TEXT = 'я булька, булька, барабулька, ебу, ебу, ебу бабульку,'
+
 # Параметры для аудио сервиса
-SAMPLE_RATE_AUDIO = 54542
+SAMPLE_RATE_AUDIO = 53542

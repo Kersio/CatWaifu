@@ -1,18 +1,23 @@
 from PySide6 import QtWidgets, QtGui, QtCore
 from PIL import Image
 
-from config import CURRENT_AVATAR
+from config import CURRENT_AVATAR, GREETING_TEXT
 from assistant.ui.avatar_menu import AvatarMenu
+from assistant.core.services.audio_service import AudioService
 
 
 class AvatarWindow(QtWidgets.QMainWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.setWindowFlags(
             QtCore.Qt.WindowType.FramelessWindowHint |
             QtCore.Qt.WindowType.WindowStaysOnTopHint |
             QtCore.Qt.WindowType.Tool
         )
+
+        self.audio_service = AudioService()
+        self.greeting_played = False  # Флаг для отслеживания приветствия
+
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setWindowTitle("CatWaifu")
         # Загрузка аватара
@@ -97,6 +102,12 @@ class AvatarWindow(QtWidgets.QMainWindow):
         elif not is_left_half and self.is_reflected:
             self.avatar_label.setPixmap(self.original_pixmap)
             self.is_reflected = False
+
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        super().showEvent(event)
+        if not self.greeting_played:
+            self.audio_service.sound_text(GREETING_TEXT)
+            self.greeting_played = True
 
     @staticmethod
     def resize_image(image_path, max_size):

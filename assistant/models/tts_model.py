@@ -1,7 +1,7 @@
 from silero import silero_tts   
 import torch
 
-from config import LANGUAGE_TTS, SPEAKER_VOICE, SPEAKER_MODEL, SAMPLE_RATE_TTS
+from config import LANGUAGE_TTS, SPEAKER_VOICE, SPEAKER_MODEL, SAMPLE_RATE_TTS, PUNCTUATION_MARKS, FLAG_PUNCTUATION
 
 DEVICE = torch.device('cuda' if torch.cpu.is_available() else 'cpu')
 
@@ -17,10 +17,12 @@ class TextToSpeechModel:
                         put_yo: bool = True) -> torch.Tensor:
 
         if not text_of_speach:
-            text_of_speach = 'У меня пинг в голове'
+            text_of_speach = 'У меня пинг в голове.'
 
         if not (sample_rate in self.permissible_sample_rates):
             sample_rate = SAMPLE_RATE_TTS
+
+        text_of_speach = self.process_text(text_of_speach) if FLAG_PUNCTUATION else text_of_speach
 
         return self.model.apply_tts(
             text=text_of_speach,
@@ -29,3 +31,9 @@ class TextToSpeechModel:
             put_accent=put_accent,
             put_yo=put_yo
         )
+
+    @staticmethod
+    def process_text(text: str) -> str:
+        for mark in PUNCTUATION_MARKS:
+            text = text.replace(mark, mark+'.')
+        return text
