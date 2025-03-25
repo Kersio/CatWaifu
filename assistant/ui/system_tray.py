@@ -23,6 +23,7 @@ class TrayIcon(QtWidgets.QSystemTrayIcon):
             QMenu::item:selected {
                 background-color: #FF69B4;  /* Более насыщенный розовый при наведении */
                 color: white;               /* Белый текст при наведении */
+                
             }
         """)
 

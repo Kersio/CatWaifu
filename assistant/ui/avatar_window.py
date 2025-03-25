@@ -4,6 +4,7 @@ from PIL import Image
 from config import CURRENT_AVATAR, GREETING_TEXT
 from assistant.ui.avatar_menu import AvatarMenu
 from assistant.core.services.audio_service import AudioService
+from assistant.core.services.fsm_service.stt_service import STTService
 
 
 class AvatarWindow(QtWidgets.QMainWindow):
@@ -16,13 +17,15 @@ class AvatarWindow(QtWidgets.QMainWindow):
         )
 
         self.audio_service = AudioService()
-        self.greeting_played = False  # Флаг для отслеживания приветствия
+        self.is_greeting_played = False  # Флаг для отслеживания приветствия
 
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setWindowTitle("CatWaifu")
+
         # Загрузка аватара
         avatar_path = CURRENT_AVATAR
         resized_pixmap = self.resize_image(avatar_path, (392, 416))
+
         # Создание QLabel для изображения
         self.avatar_label = QtWidgets.QLabel(self)
         self.avatar_label.setPixmap(resized_pixmap)
@@ -30,10 +33,13 @@ class AvatarWindow(QtWidgets.QMainWindow):
         self.avatar_label.mousePressEvent = self.on_avatar_click
         self.avatar_label.mouseMoveEvent = self.on_avatar_move
         self.avatar_label.mouseReleaseEvent = self.on_avatar_release
+
         # Устанавливаем фиксированный размер QLabel
         self.avatar_label.setFixedSize(resized_pixmap.size())
+
         # Создаем окно с кнопками
         self.avatar_menu = AvatarMenu(self)
+
         # Атрибуты для перемещения окна
         self.dragging = False
         self.offset = None
@@ -105,9 +111,10 @@ class AvatarWindow(QtWidgets.QMainWindow):
 
     def showEvent(self, event: QtGui.QShowEvent) -> None:
         super().showEvent(event)
-        if not self.greeting_played:
+        if not self.is_greeting_played:
             self.audio_service.sound_text(GREETING_TEXT)
             self.greeting_played = True
+
 
     @staticmethod
     def resize_image(image_path, max_size):

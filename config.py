@@ -32,7 +32,18 @@ PUNCTUATION_MARKS = ['.', ',', '?', '!']
 FLAG_PUNCTUATION = True
 
 # Текст приветствия при включении приложения
-GREETING_TEXT = 'я булька, булька, барабулька, ебу, ебу, ебу бабульку,'
+GREETING_TEXT = 'Привет, давно не виделись .'
 
 # Параметры для аудио сервиса
 SAMPLE_RATE_AUDIO = 53542
+
+# Параметры для STT модели
+MODEL_PATH_STT = os.path.join(BASE_DIR, 'assistant', 'models', 'vosk-model-small-ru-0.22')
+SAMPLE_RATE_STT = 16000
+
+# Параметры для FSM
+INITIAL_STATE_NAME = 'wait_command'
+MINIMAL_SCORE = 60
+TEXT_FAILED_GET_STATE = 'Не поняла просьбу.'
+STATES_PATH = os.path.join(BASE_DIR, 'assistant', 'core', 'services', 'fsm_services', 'states')
+FSM_CONFIG_PATH = os.path.join(BASE_DIR, 'config', 'fsm.json')

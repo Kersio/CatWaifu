@@ -1,7 +1,14 @@
 from silero import silero_tts   
 import torch
 
-from config import LANGUAGE_TTS, SPEAKER_VOICE, SPEAKER_MODEL, SAMPLE_RATE_TTS, PUNCTUATION_MARKS, FLAG_PUNCTUATION
+from config import (
+    LANGUAGE_TTS,
+    SPEAKER_VOICE,
+    SPEAKER_MODEL,
+    SAMPLE_RATE_TTS,
+    PUNCTUATION_MARKS,
+    FLAG_PUNCTUATION
+)
 
 DEVICE = torch.device('cuda' if torch.cpu.is_available() else 'cpu')
 

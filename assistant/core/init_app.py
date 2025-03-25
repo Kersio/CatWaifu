@@ -4,7 +4,6 @@ from PySide6 import QtWidgets, QtGui, QtCore
 from assistant.ui.avatar_window import AvatarWindow
 from assistant.ui.system_tray import TrayIcon
 
-
 def init_application():
     app = QtWidgets.QApplication([])
 
@@ -24,8 +23,7 @@ def init_application():
     tray_icon.show()
 
     def on_about_to_quit():
-        print(2)
-        avatar_window.audio_service.sound_text("До встречи!")
+        avatar_window.audio_service.sound_text("До встречи!,")
         QtWidgets.QApplication.processEvents()
         avatar_window.audio_service.stop()
 
