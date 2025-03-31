@@ -4,7 +4,8 @@ from PIL import Image
 from config import CURRENT_AVATAR, GREETING_TEXT
 from assistant.ui.avatar_menu import AvatarMenu
 from assistant.core.services.audio_service import AudioService
-from assistant.core.services.fsm_service.stt_service import STTService
+from assistant.core.services.fsm_service.fsm_thread_manager import FSMThreadManager
+from assistant.core.services.stt_service import STTService
 
 
 class AvatarWindow(QtWidgets.QMainWindow):
@@ -15,8 +16,13 @@ class AvatarWindow(QtWidgets.QMainWindow):
             QtCore.Qt.WindowType.WindowStaysOnTopHint |
             QtCore.Qt.WindowType.Tool
         )
-
         self.audio_service = AudioService()
+
+        self.fsm_service = FSMThreadManager(self.audio_service)
+
+        self.stt_service = STTService()
+        self.stt_service.text_recognized_signal.connect(self.handle_recognized_text)
+
         self.is_greeting_played = False  # Флаг для отслеживания приветствия
 
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -113,7 +119,29 @@ class AvatarWindow(QtWidgets.QMainWindow):
         super().showEvent(event)
         if not self.is_greeting_played:
             self.audio_service.sound_text(GREETING_TEXT)
-            self.greeting_played = True
+            self.is_greeting_played = True
+
+        self.start_listening()
+
+    def handle_recognized_text(self, text: str):
+        """Обработка распознанного текста."""
+        print(f"Получен текст для FSM: {text}")
+        # Передаем текст в FSM
+        self.fsm_service.process_input(text)
+
+    def start_listening(self) -> None:
+        """Запуск STT-сервиса."""
+        self.stt_service.start_listening()
+
+    def stop_listening(self) -> None:
+        """Остановка STT-сервиса."""
+        self.stt_service.stop_listening()
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        """Остановка сервисов при закрытии окна."""
+        self.stop_listening()
+        self.fsm_service.stop()
+        super().closeEvent(event)
 
 
     @staticmethod

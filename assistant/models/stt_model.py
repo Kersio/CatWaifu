@@ -56,15 +56,3 @@ class SpeechToTextModel:
         self.stream.stop_stream()
         self.stream.close()
         self.audio.terminate()
-
-
-# Создание экземпляра класса
-stt_model = SpeechToTextModel()
-
-try:
-    # Начало прослушивания
-    recognized_text = stt_model.listen()
-    print(f"Распознанный текст: {recognized_text}")
-finally:
-    # Закрытие ресурсов
-    stt_model.close()

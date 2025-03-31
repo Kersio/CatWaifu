@@ -1,14 +1,14 @@
-from silero import silero_tts   
+from silero import silero_tts
 import torch
 
 from config import (
-    LANGUAGE_TTS,
-    SPEAKER_VOICE,
-    SPEAKER_MODEL,
-    SAMPLE_RATE_TTS,
-    PUNCTUATION_MARKS,
-    FLAG_PUNCTUATION
-)
+                    LANGUAGE_TTS,
+                    SPEAKER_VOICE,
+                    SPEAKER_MODEL,
+                    SAMPLE_RATE_TTS,
+                    PUNCTUATION_MARKS,
+                    FLAG_PUNCTUATION
+                    )
 
 DEVICE = torch.device('cuda' if torch.cpu.is_available() else 'cpu')
 
@@ -32,12 +32,12 @@ class TextToSpeechModel:
         text_of_speach = self.process_text(text_of_speach) if FLAG_PUNCTUATION else text_of_speach
 
         return self.model.apply_tts(
-            text=text_of_speach,
-            speaker=speaker_voice,
-            sample_rate=sample_rate,
-            put_accent=put_accent,
-            put_yo=put_yo
-        )
+                                text=text_of_speach,
+                                speaker=speaker_voice,
+                                sample_rate=sample_rate,
+                                put_accent=put_accent,
+                                put_yo=put_yo
+                                )
 
     @staticmethod
     def process_text(text: str) -> str:

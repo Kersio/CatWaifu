@@ -1,10 +1,10 @@
-from PySide6.QtCore import QThread, Signal
-from assistant.models.stt_model import SpeechToTextModel  # Импортируем вашу модель STT
+from PySide6.QtCore import QThread, Signal, QObject
+from assistant.models.stt_model import SpeechToTextModel
 
 
 class STTProcessingThread(QThread):
-    text_recognized_signal = Signal(str)  # Сигнал для передачи распознанного текста
-    error_signal = Signal(str)  # Сигнал для передачи ошибок
+    text_recognized_signal = Signal(str)
+    error_signal = Signal(str)
 
     def __init__(self) -> None:
         super().__init__()
@@ -12,11 +12,12 @@ class STTProcessingThread(QThread):
         self.is_running = True
 
     def run(self) -> None:
+        print(1)
         try:
             while self.is_running:
                 recognized_text = self.stt_model.listen()
                 if recognized_text:
-                    # Отправляем распознанный текст через сигнал
+
                     self.text_recognized_signal.emit(recognized_text)
 
         except Exception as e:
@@ -28,8 +29,11 @@ class STTProcessingThread(QThread):
         self.quit()
 
 
-class STTService:
+class STTService(QObject):  # Наследуем от QObject для работы с сигналами
+    text_recognized_signal = Signal(str)
+
     def __init__(self) -> None:
+        super().__init__()
         self.stt_thread = None
 
     def start_listening(self) -> None:
@@ -51,10 +55,9 @@ class STTService:
             self.stt_thread.wait()  # Дожидаемся завершения потока
 
     def _on_text_recognized(self, text: str) -> None:
-        """
-        Вызывается при распознавании текста.
-        """
         print(f"Распознанный текст: {text}")
+
+        self.text_recognized_signal.emit(text)
 
     @staticmethod
     def _on_error(error_message: str) -> None:

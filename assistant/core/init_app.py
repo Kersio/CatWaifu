@@ -4,6 +4,7 @@ from PySide6 import QtWidgets, QtGui, QtCore
 from assistant.ui.avatar_window import AvatarWindow
 from assistant.ui.system_tray import TrayIcon
 
+
 def init_application():
     app = QtWidgets.QApplication([])
 
@@ -24,8 +25,7 @@ def init_application():
 
     def on_about_to_quit():
         avatar_window.audio_service.sound_text("До встречи!,")
-        QtWidgets.QApplication.processEvents()
-        avatar_window.audio_service.stop()
+        avatar_window.audio_service.wait_for_all_tasks()
 
     app.aboutToQuit.connect(on_about_to_quit)
 

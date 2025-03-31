@@ -1,7 +1,8 @@
 import json
 from fuzzywuzzy import process
 import importlib
-
+from assistant.core.services.audio_service import AudioService
+from assistant.core.services.fsm_service.states.WaitCommandState import WaitCommandState
 from assistant.core.services.fsm_service.context import Context
 from config import (
     INITIAL_STATE_NAME,
@@ -14,8 +15,10 @@ from config import (
 
 class FSM:
 
-    def __init__(self, config_path: str = FSM_CONFIG_PATH):
+    def __init__(self, audio_service: AudioService, config_path: str = FSM_CONFIG_PATH):
         self.context = Context()
+        self.context.data["audio_service"] = audio_service
+        self.context.data["fsm"] = self
         self.current_state = None
         self.config = self._load_config(config_path)
         self._register_commands()
@@ -36,16 +39,74 @@ class FSM:
             setattr(self, f"_{cmd_name}_end_state", cmd_data["конечное_состояние"])
 
     def process(self, user_input):
-        if self.current_state is None:
+        # Если текущее состояние не задано, устанавливаем начальное состояние
+        if self.current_state is None or type(self.current_state) is WaitCommandState:
             self.current_state = self._get_initial_state()
 
-        # Определяем текущее состояние через FuzzyWuzzy
-        next_state_class = self._get_next_state(user_input)
-        if next_state_class:
-            self.current_state = next_state_class(self.context)
-            return self.current_state.get_response()
+            # Проверяем, является ли user_input названием существующей команды
+            next_state_class = self._get_next_state(user_input)
+            if next_state_class:
+                self.current_state = next_state_class(self.context)
+                return
+            else:
+                return f"Ошибка: Не удалось импортировать конечное состояние для команды '{user_input}'."
+
+
+        # Если текущее состояние уже задано
         else:
-            return TEXT_FAILED_GET_STATE
+            # Проверяем, является ли user_input именем состояния
+            if self._is_valid_state_name(user_input):
+                next_state_class = self._import_state_class(user_input)
+                if next_state_class:
+                    self.current_state = next_state_class(self.context)
+                    return
+                else:
+                    return "Ошибка: Не удалось импортировать состояние."
+
+            # Если user_input не является именем состояния
+            else:
+                # Сохраняем user_input в контекст как context.data['temp']
+                self.context.data['temp'] = user_input
+
+                # Вызываем get_response у текущего состояния
+                response = self.current_state.get_response()
+
+                # Проверяем, является ли ответ именем следующего состояния
+                if isinstance(response, str):
+                    next_state_class = self._import_state_class(response)
+                    if next_state_class:
+                        self.current_state = next_state_class(self.context)
+                        return self.current_state.get_response()
+                    else:
+                        return "Ошибка: Не удалось импортировать следующее состояние."
+                else:
+                    # Если ответ не является именем состояния, возвращаем его как результат
+                    return response
+
+    def _is_valid_state_name(self, state_name: str) -> bool:
+        """
+        Проверяет, является ли строка допустимым именем состояния.
+
+        :param state_name: Строка для проверки.
+        :return: True, если имя состояния допустимо, иначе False.
+        """
+        try:
+            # Пытаемся импортировать состояние
+            module = importlib.import_module(f"{STATES_PATH}.{state_name.lower()}_state")
+            getattr(module, state_name)
+            return True
+        except (ImportError, AttributeError):
+            return False
+
+    def _handle_final_state(self, final_state_name):
+        """Обработка конечного состояния."""
+        print(f"Final state '{final_state_name}' reached.")
+        # Выполняем действия для завершения задачи
+        response = f"Задача завершена. Переход в начальное состояние."
+
+        # Переходим в начальное состояние
+        self.current_state = self._get_initial_state()
+        return response
 
     def _get_next_state(self, user_input):
         # Ищем команду через FuzzyWuzzy
@@ -54,14 +115,14 @@ class FSM:
             best_match, score = process.extractOne(user_input, keywords)
             if score > MINIMAL_SCORE:
                 # Задаем следующее состояние из конфига
-                next_state_name = self.config["команды"][cmd_name]["начальное_состояние"]
+                next_state_name = self.config["команды"][cmd_name]["конечное_состояние"]
                 return self._import_state_class(next_state_name)
         return None
 
     @staticmethod
     def _import_state_class(state_name: str):
         try:
-            module = importlib.import_module(f"{STATES_PATH}.{state_name.lower()}_state")
+            module = importlib.import_module(f"{STATES_PATH}.{state_name}")
             return getattr(module, state_name)
 
         except (ImportError, AttributeError):
