@@ -1,4 +1,6 @@
-**/__pycache__/*.py
+__pycache__/
 .idea/
-venv
+venv/
 test.py
+data/models/vosk-model-small-ru/*
+data/models/*.model
