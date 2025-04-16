@@ -23,6 +23,12 @@ class AvatarWindow(QtWidgets.QMainWindow):
         self.stt_service = STTService()
         self.stt_service.text_recognized_signal.connect(self.handle_recognized_text)
 
+        self.inactivity_timer = QtCore.QTimer(self)
+        self.inactivity_timer.setInterval(10 * 1000)  # 3 минуты
+        self.inactivity_timer.timeout.connect(self.attract_attention)
+
+        self.reset_inactivity_timer()
+
         self.is_greeting_played = False  # Флаг для отслеживания приветствия
 
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -56,6 +62,8 @@ class AvatarWindow(QtWidgets.QMainWindow):
         self.setGeometry(1620, 635, 392, 416)
 
     def on_avatar_click(self, event):
+        self.reset_inactivity_timer()
+
         if event.button() == QtCore.Qt.MouseButton.RightButton:
             if self.avatar_menu.isVisible():
                 self.avatar_menu.hide()
@@ -69,6 +77,7 @@ class AvatarWindow(QtWidgets.QMainWindow):
                 self.avatar_menu.hide()
 
     def on_avatar_move(self, event):
+        self.reset_inactivity_timer()
         if self.dragging and self.offset:
             new_pos = event.globalPos() - self.offset
             self.move(new_pos)
@@ -79,6 +88,8 @@ class AvatarWindow(QtWidgets.QMainWindow):
                 self.update_buttons_position()
 
     def on_avatar_release(self, event):
+        self.reset_inactivity_timer()
+
         if event.button() == QtCore.Qt.MouseButton.LeftButton:
             self.dragging = False
             self.offset = None
@@ -97,6 +108,15 @@ class AvatarWindow(QtWidgets.QMainWindow):
         y = global_avatar_pos.y() + (avatar_rect.height() - self.avatar_menu.sizeHint().height()) // 2
         self.avatar_menu.set_position(x, y)
         self.avatar_menu.show()
+
+    def attract_attention(self):
+        """Привлечение внимания через звуковой сигнал."""
+        self.audio_service.sound_text("Эй, я здесь. Не забывай про меня .")
+
+    def reset_inactivity_timer(self):
+        """Сброс таймера бездействия."""
+        self.inactivity_timer.stop()
+        self.inactivity_timer.start()
 
     def update_buttons_position(self):
         """Обновляет позицию кнопок, если они видимы"""
@@ -128,6 +148,7 @@ class AvatarWindow(QtWidgets.QMainWindow):
         print(f"Получен текст для FSM: {text}")
         # Передаем текст в FSM
         self.fsm_service.process_input(text)
+        self.reset_inactivity_timer()
 
     def start_listening(self) -> None:
         """Запуск STT-сервиса."""
@@ -141,6 +162,7 @@ class AvatarWindow(QtWidgets.QMainWindow):
         """Остановка сервисов при закрытии окна."""
         self.stop_listening()
         self.fsm_service.stop()
+        self.inactivity_timer.stop()
         super().closeEvent(event)
 
 

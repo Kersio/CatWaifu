@@ -10,3 +10,5 @@ if __name__ == "__main__":
 # TODO: Воспроизведение звуковых файлов в audio_service
 # TODO: переработать поток в audio_service
 # TODO: Экран загрузки приложения
+# TODO: фикс скрытия (STT_SERV(CE не создает новую модель STT)
+# TODO: АБОБА
