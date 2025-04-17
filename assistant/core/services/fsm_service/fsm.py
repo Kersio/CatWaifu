@@ -37,14 +37,14 @@ class FSM:
         if self.current_state is None:
             self.current_state = self._get_initial_state()
 
-        next_state_name = self.current_state.process(user_input)  # Теперь state сам определяет следующее состояние
+        next_state_name = self.current_state.process(user_input)
         if next_state_name:
             next_state_class = self._import_state_class(next_state_name)
             if next_state_class:
                 self.current_state = next_state_class
             else:
                 return f"Ошибка: состояние '{next_state_name}' не найдено"
-
+        
         response = self.current_state.get_response()
         return response
 

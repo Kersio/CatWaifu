@@ -24,7 +24,7 @@ class AvatarWindow(QtWidgets.QMainWindow):
         self.stt_service.text_recognized_signal.connect(self.handle_recognized_text)
 
         self.inactivity_timer = QtCore.QTimer(self)
-        self.inactivity_timer.setInterval(10 * 1000)  # 3 минуты
+        self.inactivity_timer.setInterval(60 * 1000)
         self.inactivity_timer.timeout.connect(self.attract_attention)
 
         self.reset_inactivity_timer()

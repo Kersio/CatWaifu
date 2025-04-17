@@ -7,6 +7,14 @@
     "search_web": {
       "keywords": ["поиск", "найди", "найти", "открой в браузере"],
       "end_state": "OpenBrowserState"
+    },
+    "increase_volume": {
+      "keywords": ["громче"],
+      "end_state": "IncreaseVolumeState"
+    },
+    "decrease_volume": {
+      "keywords": ["тише"],
+      "end_state": "DecreaseVolumeState"
     }
   }
 }
