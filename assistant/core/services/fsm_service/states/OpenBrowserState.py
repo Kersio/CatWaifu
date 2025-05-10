@@ -1,9 +1,9 @@
 import webbrowser
-from assistant.core.services.fsm_service.states.state import State
+from assistant.core.services.fsm_service.states.state import AwaitInputState
 
 
-class OpenBrowserState(State):
-    def process(self, user_input: str) -> str:
+class OpenBrowserState(AwaitInputState):
+    def _on_input(self, user_input: str) -> str:
         # Формируем URL поиска Google
         search_query = user_input.strip().replace(" ", "+")
         url = f"https://www.google.com/search?q={search_query}"

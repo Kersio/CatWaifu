@@ -1,6 +1,7 @@
 import sys
 
 from PySide6 import QtWidgets, QtGui, QtCore
+
 from assistant.ui.avatar_window import AvatarWindow
 from assistant.ui.system_tray import TrayIcon
 

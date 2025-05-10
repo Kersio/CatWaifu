@@ -1,12 +1,11 @@
 import ctypes
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
-from assistant.core.services.fsm_service.states.state import State
+from assistant.core.services.fsm_service.states.state import ImmediateActionState
 
 
-class IncreaseVolumeState(State):
-    def process(self, user_input: str) -> str:
-        print(1)
+class IncreaseVolumeState(ImmediateActionState):
+    def _execute(self, user_input: str) -> str:
         # Получаем текущее устройство воспроизведения
         devices = AudioUtilities.GetSpeakers()
         interface = devices.Activate(

@@ -5,7 +5,7 @@
       "end_state": "AwaitAudioNameState"
     },
     "search_web": {
-      "keywords": ["поиск", "найди", "найти", "открой в браузере"],
+      "keywords": ["поиск", "найди", "найти", "найди в браузере"],
       "end_state": "OpenBrowserState"
     },
     "increase_volume": {
@@ -15,6 +15,18 @@
     "decrease_volume": {
       "keywords": ["тише"],
       "end_state": "DecreaseVolumeState"
+    },
+    "describe_image": {
+      "keywords": ["опиши картинку", "анализ изображения", "что на картинке"],
+      "end_state": "DescribeImageState"
+    },
+    "open_program": {
+      "keywords": ["запусти приложение", "запустить программу"],
+      "end_state": "OpenProgramState"
+    },
+    "close_program": {
+      "keywords": ["выключи приложение", "выключить программу"],
+      "end_state": "CloseProgramState"
     }
   }
 }

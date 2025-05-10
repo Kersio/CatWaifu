@@ -2,6 +2,7 @@ import json
 import importlib
 from assistant.core.services.audio_service import AudioService
 from assistant.core.services.fsm_service.context import Context
+from assistant.core.services.fsm_service.states.state import ImmediateActionState
 from config import (
     INITIAL_STATE_NAME,
     STATES_PATH,
@@ -37,14 +38,28 @@ class FSM:
         if self.current_state is None:
             self.current_state = self._get_initial_state()
 
-        next_state_name = self.current_state.process(user_input)
-        if next_state_name:
-            next_state_class = self._import_state_class(next_state_name)
-            if next_state_class:
-                self.current_state = next_state_class
+        while True:
+            # Выполняем обработку ввода текущим состоянием
+            next_state_name = self.current_state.process(user_input)
+
+            if next_state_name:
+                next_state_class = self._import_state_class(next_state_name)
+                if next_state_class:
+                    self.current_state = next_state_class
+
+                    # Если новое состояние — ImmediateActionState
+                    if isinstance(self.current_state, ImmediateActionState):
+                        # Повторно вызываем process() с тем же user_input
+                        continue
+                    else:
+                        # Для AwaitInputState — выходим, ждём следующий ввод
+                        break
+                else:
+                    return f"Ошибка: состояние '{next_state_name}' не найдено"
             else:
-                return f"Ошибка: состояние '{next_state_name}' не найдено"
-        
+                # Если состояние не меняется — выходим
+                break
+
         response = self.current_state.get_response()
         return response
 

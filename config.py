@@ -41,9 +41,13 @@ SAMPLE_RATE_AUDIO = 53542
 MODEL_PATH_STT = os.path.join(BASE_DIR, 'assistant', 'models', 'vosk-model-small-ru-0.22')
 SAMPLE_RATE_STT = 16000
 
+# Параметры для IA модели
+MODEL_PATH_IA = os.path.join(BASE_DIR, 'assistant', 'models', 'googlevit-base-patch16-224')
+
+
 # Параметры для FSM
 INITIAL_STATE_NAME = 'WaitCommandState'
-MINIMAL_SCORE = 60
+MINIMAL_SCORE = 80
 TEXT_FAILED_GET_STATE = 'Не поняла просьбу.'
 STATES_PATH = 'assistant.core.services.fsm_service.states'
 FSM_CONFIG_PATH = os.path.join(BASE_DIR, 'config', 'fsm.json')

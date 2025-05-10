@@ -25,4 +25,4 @@ class WaitCommandState(State):
         return ""  # Неопознанная команда
 
     def get_response(self) -> str:
-        return "Жду команду..."
+        return "Жду команду."
