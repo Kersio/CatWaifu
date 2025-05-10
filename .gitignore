@@ -3,4 +3,5 @@
 .idea/
 venv/
 assistant/models/vosk-model-small-ru-0.22/
+assistant/models/googlevit-base-patch16-224/
 *.yml
